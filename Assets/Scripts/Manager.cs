@@ -1,117 +1,105 @@
 using System;
-using System.IO;
 using UnityEngine;
 using System.Collections;
-//Written by M. Gibson Bethke
-public class Manager : MonoBehaviour 
+//Writen by Gibson Bethke
+public class Manager : MonoBehaviour
 {
+	
+public bool debugMode = false;
+public int season;
+public int mapSize;
+DateTime lastPlayed;
+System.TimeSpan differenceInDays;
+public int currentTime;
 
-	public GUISkin guiSkin;
-	
-	string fileLocation = "File Location";
-	byte [] originalBytes;
-	byte [] newBytes;
-	byte firstByte;
-	byte lastByte;
-	
-	int index;
-	
-	
-	void OnGUI ()
+
+	void Start ()
 	{
 		
-		GUI.skin = guiSkin;
+		DontDestroyOnLoad (transform.gameObject);
 		
-		fileLocation = GUI.TextField ( new Rect ( Screen.width / 2 - 200, Screen.height / 2 - 20, 400, 20 ), fileLocation.Trim ());
+		string lastPlayedTemp;
+		lastPlayedTemp = PlayerPrefs.GetString("Last Played");
+		if ( String.IsNullOrEmpty ( lastPlayedTemp ) == false )
+			lastPlayed = Convert.ToDateTime(lastPlayedTemp);
+		else
+			lastPlayed = DateTime.Today;
+
+		differenceInDays = DateTime.Today - lastPlayed;
 		
-		if ( GUI.Button ( new Rect ( Screen.width / 2 - 200, Screen.height / 2 + 90, 400, 20 ), "ByteShift" ))
+		if(debugMode == false)
 		{
 			
-			UnityEngine.Debug.Log ( "byteShift" );
-			originalBytes = File.ReadAllBytes ( fileLocation );
-			
-			firstByte = originalBytes [0];
-			lastByte = originalBytes [originalBytes.Length - 1];
-			
-			UnityEngine.Debug.Log ( "Original First Byte: " + firstByte + " Original Last Byte: " + lastByte );
-			
-			newBytes = new byte[originalBytes.Length];
-			index = 0;
-			
-			while ( index < originalBytes.Length )
+			switch(DateTime.Today.Month)
 			{
-				
-				if ( index == 0 )
-				{
-					
-					newBytes[0] = lastByte;
-					index =+ 1;
-				} else {
-				
-					newBytes[index] = ( originalBytes [index] );
-					index += 1;
-				
-					if ( index == originalBytes.Length - 1  )
-					{
-					
-						UnityEngine.Debug.Log ( "LastStep" );
-						newBytes[index] = firstByte;
-						
-						index += 1;
-					}
-				}
+			
+/*January*/		case 1:
+/*February*/	case 2:
+					season = 3;
+	  				break;
+/*March*/		case 3:
+/*April*/		case 4:
+/*May*/			case 5:
+					season = 0;
+	   				break;
+/*June*/		case 6:
+/*July*/		case 7:
+/*August*/		case 8:
+					season = 1;
+					break;
+/*Spetember*/	case 9:
+/*October*/		case 10:
+/*November*/	case 11:
+					season = 2;
+					break;
+/*December*/	case 12:
+					season = 3;
+					break;
+				default:
+					Debug.LogError ("There is an error in the Switch Statement!");
+					DebugLog ();
+					break;
 			}
-			
-			if ( File.Exists ( fileLocation ))
-				File.Delete ( fileLocation );
-				
-			File.WriteAllBytes ( fileLocation, newBytes );
-			
-			UnityEngine.Debug.Log ( "Your dastardly deed is done." );
-		}
-		
-		if ( GUI.Button ( new Rect ( Screen.width / 2 - 200, Screen.height / 2 + 120, 400, 20 ), "RightShift" ))
+		} else
 		{
-			
-			UnityEngine.Debug.Log ( "rightShift" );
-			originalBytes = File.ReadAllBytes ( fileLocation );
-			
-			firstByte = originalBytes [ originalBytes.Length - 1 ];
-			lastByte = originalBytes [ 0 ];
-			
-			UnityEngine.Debug.Log ( "Original First Byte: " + firstByte + " Original Last Byte: " + lastByte );
-			
-			newBytes = new byte[originalBytes.Length];
-			index = 0;
-			
-			while ( index < originalBytes.Length )
-			{
 				
-				if ( index == 0 )
-				{
-					
-					newBytes[0] = firstByte;
-					index += 1;
-				} else {
-				
-					newBytes[index] = ( originalBytes [index] );
-					index += 1;
-					
-					if ( index == originalBytes.Length )
-					{
-						
-						UnityEngine.Debug.Log ( "LastStep" );
-						newBytes[originalBytes.Length - 1] = lastByte;
-					}
-				}
-			}
-			
-			if ( File.Exists ( fileLocation ))
-				File.Delete ( fileLocation );
-				
-			File.WriteAllBytes ( fileLocation, newBytes );
-			
-			UnityEngine.Debug.Log ( "I've undone your mistake." );
+			DebugLog();
 		}
+	}
+	
+	
+/*	void Update ()
+	{
+		
+		currentTime = DateTime.Today.Minute;
+		Debug.Log (currentTime);
+	}
+*/	
+	
+	void Save ()
+	{
+		
+		lastPlayed = DateTime.Today;
+		PlayerPrefs.SetString("Last Played", lastPlayed.ToString ());
+		if(debugMode == true)
+			Debug.Log ("Saved");
+	}
+	
+	
+	void OnDrawGizmosSelected()
+	{
+		
+        Gizmos.color = new Color(0,0,0,.5F);
+        Gizmos.DrawSphere(new Vector3(0, 0, 0), mapSize);
+    }
+	
+	
+	void DebugLog ()
+	{
+		
+		Debug.Log ("Last played on: " + lastPlayed);
+		Debug.Log ("Today is: " + DateTime.Today);
+		Debug.Log ("The difference in days is: " + differenceInDays);
+		Debug.Log ("This season is: " + season);
 	}
 }
